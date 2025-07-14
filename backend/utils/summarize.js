@@ -13,19 +13,23 @@ const MODEL_CONFIG = {
     max_tokens: 30000,
     temperature: 0.5,
     chunkSize: 20000
+  },
+  'llama3-8b-8192': {
+    max_tokens: 8000,
+    temperature: 0.7,
+    chunkSize: 6000
   }
 };
 
 const summarize = async (text, options = {}) => {
   const {
-    model = 'mixtral-8x7b-32768',  // Default to larger model
+    model = 'llama3-70b-8192',  
     retries = 3,
-    timeout = 45000,  // 45 seconds
+    timeout = 45000,  
     verbose = true
   } = options;
 
   try {
-    // NEW: Automatic chunking for long transcripts
     const chunkText = (text, maxLength) => {
       const chunks = [];
       while (text.length > 0) {
@@ -98,7 +102,6 @@ ${chunks[i]}`;
       }
     }
 
-    // NEW: Final consolidation pass if multiple chunks
     if (chunks.length > 1) {
       if (verbose) console.log('ℹ️ Consolidating chunks...');
       const res = await axios.post(
@@ -112,7 +115,7 @@ ${chunks[i]}`;
             },
             { role: 'user', content: `Combine these summaries into one:\n\n${fullSummary}` }
           ],
-          temperature: 0.3,  // Lower temp for more factual combining
+          temperature: 0.3, 
           max_tokens: MODEL_CONFIG[model].max_tokens
         },
         {
